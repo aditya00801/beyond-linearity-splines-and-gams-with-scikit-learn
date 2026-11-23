@@ -126,8 +126,66 @@ def one_se_rule(values, means, ses, prefer='smaller'):
     else:
         raise ValueError("prefer must be 'smaller' or 'larger'")
 
-# Step 4 - polynomial_regression (not yet solved)
-# TODO: implement
+# Step 4 - polynomial_regression
+import numpy as np
+from scipy.stats import f as f_dist
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+
+def poly_model(degree):
+    # Scale first so high powers stay numerically stable
+    return make_pipeline(
+        StandardScaler(),
+        PolynomialFeatures(degree, include_bias=False),
+        LinearRegression(),
+    )
+
+def poly_curve(X, y, degrees, cv):
+    # CV mean MSE and standard error for each polynomial degree
+    means, ses = cv_curve(poly_model, X, y, degrees, cv)
+    return means, ses
+
+def anova_degrees(X, y, max_degree):
+    y = np.asarray(y, dtype=float).ravel()
+    n = len(y)
+
+    def rss(d):
+        # Residual sum of squares of a degree-d fit on all the data
+        model = poly_model(d).fit(X, y)
+        resid = y - model.predict(X)
+        return float(np.sum(resid ** 2))
+
+    results = []
+    prev_rss = rss(1)
+    for d in range(2, max_degree + 1):
+        cur_rss = rss(d)
+        df = n - d - 1
+        # F-test of degree d against degree d - 1 (1 extra parameter)
+        F = (prev_rss - cur_rss) / (cur_rss / df)
+        p = f_dist.sf(F, 1, df)
+        results.append((d, round(float(F), 2), round(float(p), 4)))
+        prev_rss = cur_rss
+    return results
+
+def choose_degree(X, y, degrees, cv, alpha=0.05):
+    # Degree with the lowest CV error
+    means, _ = poly_curve(X, y, degrees, cv)
+    degree_min = degrees[int(np.argmin(means))]
+
+    # Largest degree reached before the first non-significant test
+    max_degree = max(max(degrees), 2)
+    degree_anova = 1
+    for d, F, p in anova_degrees(X, y, max_degree):
+        if p < alpha:
+            degree_anova = d
+        else:
+            break
+    return degree_min, degree_anova
+
+def curve_on_grid(model, grid):
+    # Flatten predictions to 1-D and round to 2 decimals
+    return np.round(np.asarray(model.predict(grid)).ravel(), 2)
 
 # Step 5 - step_functions (not yet solved)
 # TODO: implement
