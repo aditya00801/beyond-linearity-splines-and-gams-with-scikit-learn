@@ -187,8 +187,63 @@ def curve_on_grid(model, grid):
     # Flatten predictions to 1-D and round to 2 decimals
     return np.round(np.asarray(model.predict(grid)).ravel(), 2)
 
-# Step 5 - step_functions (not yet solved)
-# TODO: implement
+# Step 5 - step_functions
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import KBinsDiscretizer
+
+def step_model(n_bins):
+     # Divide data into uniform bins and apply linear regression
+    return make_pipeline(      # combines both operations
+        KBinsDiscretizer(
+            n_bins = n_bins,                           #specifies the number of bins
+            encode = 'onehot-dense',                   # converts bins into one-hot encoded features.
+            strategy = 'uniform'                       # reates bins of equal width.
+        ),                                             #divides continuous data into bins.
+        LinearRegression() # predicts the output using the encoded bins.
+    )
+
+def step_curve(X, y, bins, cv):
+    # Evaluate different bin counts using cross-validation
+    return cv_curve(step_model, X, y, bins, cv)   
+    # it return means, ses
+
+
+def choose_bins(X, y, bins, cv):
+      # Find minimum-MSE and one-SE bin counts
+
+    #calculate the cross-validation results
+    means, ses = step_curve(X, y,bins, cv)
+
+    # Find the bin count with minimum MSE
+    bins_min = bins[np.argmin(means)]
+
+    # apply one_se_rule()
+    bins_1se = one_se_rule(
+        bins, means, ses,
+        prefer = 'smaller'
+    )
+
+    return bins_min, bins_1se
+
+
+
+def bin_edges(model):
+    # Extract fitted bin boundaries and round to 1 decimal
+    edges = model.named_steps['kbinsdiscretizer'].bin_edges_[0]
+
+    return np.round(edges,1).tolist()
+
+def step_levels(model, grid):
+     # Get sorted, distinct predictions rounded to 1 decimal
+    grid = np.asarray(grid).reshape(-1,1)
+
+    predictions = model.predict(grid)
+
+    return sorted(
+        np.round(np.unique(predictions), 1).tolist()
+    )
 
 # Step 6 - spline_regression (not yet solved)
 # TODO: implement
