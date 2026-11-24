@@ -245,11 +245,103 @@ def step_levels(model, grid):
         np.round(np.unique(predictions), 1).tolist()
     )
 
-# Step 6 - spline_regression (not yet solved)
-# TODO: implement
+# Step 6 - spline_regression
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import SplineTransformer
 
-# Step 7 - extrapolation (not yet solved)
-# TODO: implement
+
+def spline_model(n_knots, degree=3, extrapolation='constant'):
+
+    # Create a pipeline: SplineTransformer + LinearRegression
+    return make_pipeline(
+        SplineTransformer(
+            n_knots=n_knots,             # Number of knots
+            degree=degree,               # Polynomial degree
+            knots='quantile',            # Place knots using quantiles
+            extrapolation=extrapolation, # Handle values outside training range
+            include_bias=False           # Avoid redundant bias column
+        ),
+        LinearRegression()               # Fit regression on spline features
+    )
+
+
+def spline_basis_size(model, X):
+
+    # Access the fitted spline transformer from the pipeline
+    transformer = model.named_steps['splinetransformer']
+
+    # Transform a few rows and return the number of basis columns
+    return transformer.transform(X[:5]).shape[1]
+
+
+def spline_curve(X, y, knot_counts, cv):
+
+    # Evaluate different knot counts using cross-validation
+    return cv_curve(
+        spline_model,
+        X,
+        y,
+        knot_counts,
+        cv
+    )
+
+def choose_knots(X, y, knot_counts, cv):
+
+    # Get mean CV errors and standard errors
+    means, ses = spline_curve(X, y, knot_counts, cv)
+
+    # Select the minimum-error and one-SE knot counts
+    k_min = knot_counts[np.argmin(means)]
+    k_1se = one_se_rule(knot_counts, means, ses, prefer='smaller')
+
+    return k_min, k_1se
+
+# Step 7 - extrapolation
+import numpy as np
+import pandas as pd
+
+
+def beyond_data(models, ages):
+
+    # Convert ages into a DataFrame
+    df = pd.DataFrame({'age': ages})
+
+    results = {}
+
+    # Predict using each fitted model
+    for name, model in models.items():
+        predictions = model.predict(df)
+
+        # Round predictions to 1 decimal
+        results[name] = np.round(predictions, 1).tolist()
+
+    return results
+
+
+def extrapolation_report(X, y, ages):
+
+    # Create three regression models
+    models = {
+        'poly4': poly_model(4),
+        'spline_const': spline_model(5),
+        'spline_linear': spline_model(5, extrapolation='linear')
+    }
+
+    # Train all three models
+    for model in models.values():
+        model.fit(X, y)
+
+    # Generate predictions
+    report = beyond_data(models, ages)
+
+    # Calculate polynomial prediction range
+    report['poly4_range'] = round(
+        max(report['poly4']) - min(report['poly4']), 1
+    )
+
+    return report
 
 # Step 8 - smoothing_spline (not yet solved)
 # TODO: implement
