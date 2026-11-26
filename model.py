@@ -392,8 +392,28 @@ def choose_alpha(X, y, alphas, cv):
     alpha_1se = one_se_rule(alphas, means, ses, prefer = "larger")
     return alpha_min, alpha_1se
 
-# Step 9 - local_smoother (not yet solved)
-# TODO: implement
+# Step 9 - local_smoother
+import numpy as np
+from sklearn.neighbors import KNeighborsRegressor
+
+def local_model(span, n_train):
+    # span is a fraction, so convert it to a number of neighbors
+    k = max(2, int(round(span * n_train)))
+    return KNeighborsRegressor(n_neighbors=k)
+
+def local_curve(X, y, spans, cv):
+    # cv_curve gives only span, so lambda also supplies n_train
+    return cv_curve(lambda span: local_model(span, len(X)), X, y, spans, cv)
+
+def choose_span(X, y, spans, cv):
+    means, ses = local_curve(X, y, spans, cv)
+    span_min = spans[np.argmin(means)]
+    span_1se = one_se_rule(spans, means, ses, prefer="larger")
+    return span_min, span_1se
+
+def roughness(curve):
+    second = np.diff(np.ravel(curve), n=2)
+    return round(float(np.mean(np.abs(second))), 3)
 
 # Step 10 - gam_pipeline (not yet solved)
 # TODO: implement
