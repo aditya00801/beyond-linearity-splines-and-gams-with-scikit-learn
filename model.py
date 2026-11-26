@@ -343,8 +343,54 @@ def extrapolation_report(X, y, ages):
 
     return report
 
-# Step 8 - smoothing_spline (not yet solved)
-# TODO: implement
+# Step 8 - smoothing_spline
+import numpy as np
+from sklearn.linear_model import Ridge
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import SplineTransformer
+
+def smooth_model(alpha, n_knots=20):
+    # make curve features. Step B: fit them with a penalty 
+    return make_pipeline(
+        SplineTransformer(n_knots = n_knots,degree = 3, knots = "quantile", include_bias = False),
+        Ridge(alpha= alpha)
+    )
+    
+
+def effective_df(model, X):
+    #  Get the spline columns from the fitted transformer
+    B = model[0].transform(X)
+
+    # Center them : subtract each column's mean
+    B = B - B.mean(axis = 0)
+
+    # Comppute  B^T B
+    BtB= B.T @ B
+
+    # get alpha from the Ridge step 
+    alpha = model[-1].alpha
+
+    # compute (B^T b + alpha* I )^-1  B^T B
+    S = np.linalg.lstsq(BtB + alpha * np.eye(BtB.shape[0]), BtB, rcond = None)[0]
+
+    # add one  or the intercept
+    return  round(float(1 + np.trace(S)), 2)
+
+
+def smooth_curve(X, y, alphas, cv):
+    # # Get the error and standard error for every alpha
+    return cv_curve(smooth_model, X,y, alphas, cv) 
+
+def choose_alpha(X, y, alphas, cv):
+    means, ses = smooth_curve(X, y, alphas, cv)
+    
+    # Alpha with the lowest error
+    alpha_min = alphas[np.argmin(means)]
+
+    # larget alpha  whoes error is still cloes to the  loest
+
+    alpha_1se = one_se_rule(alphas, means, ses, prefer = "larger")
+    return alpha_min, alpha_1se
 
 # Step 9 - local_smoother (not yet solved)
 # TODO: implement
