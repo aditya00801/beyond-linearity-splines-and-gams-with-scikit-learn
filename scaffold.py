@@ -2,21 +2,50 @@
 Beyond Linearity: Splines and GAMs with Scikit-Learn scaffold.
 
 Run this with: python scaffold.py
-Uses functions defined in model.py.
+Uses the functions in the beyond_linearity package.
 """
 
-from model import *  # noqa: F401, F403 (pulls in your solution functions)
+from beyond_linearity import (
+    age_grid,
+    age_xy,
+    anova_degrees,
+    bin_edges,
+    choose_alpha,
+    choose_bins,
+    choose_degree,
+    choose_knots,
+    choose_span,
+    comparison_lines,
+    curves_table,
+    curve_on_grid,
+    cv_mse,
+    describe_wage,
+    education_effect,
+    effective_df,
+    extrapolation_report,
+    fit_age_models,
+    gam_feature_count,
+    gam_model,
+    gam_summary,
+    gam_test_rmse,
+    gam_xy,
+    high_earner,
+    high_earner_probability,
+    logistic_gam_auc,
+    logistic_gam_model,
+    load_wage,
+    local_model,
+    poly_curve,
+    roughness,
+    smooth_model,
+    spline_curve,
+    spline_model,
+    split_wage,
+    step_curve,
+    step_model,
+    test_rmse,
+)
 
-"""Beyond Linearity: Splines and GAMs with scikit-learn (ISL, chapter 7).
-
-Story: load the book's Wage data and hold out a test set; fit wage against age with
-polynomials (degree chosen by nested F-tests, as in the book), step functions,
-regression splines, a penalized smoothing spline and a local smoother, choosing
-the rest by cross-validation with the one-standard-error rule; watch a quartic explode past the data while a spline with
-linear tails does not; build an additive model of age, year and education with a
-ColumnTransformer, read its partial effects, turn it into a logistic GAM for high
-earners; then open the test set once and compare every curve.
-"""
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import KFold, StratifiedKFold
