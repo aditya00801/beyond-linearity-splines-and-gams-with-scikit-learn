@@ -436,7 +436,7 @@
         <div>
           <p class="section-kicker">02 / Try it yourself</p>
           <h2 id="demo-title">Run the walkthrough.</h2>
-          <p class="demo-copy">Clone the repository, install its Python packages, and run the script. The first run downloads the ISLP Wage data, so it needs an internet connection.</p>
+          <p class="demo-copy">Run the project as an interactive app: choose a model, change its settings, explore the fitted curve, and compare predictions. You can also deploy it on Streamlit Community Cloud so anyone can open it in a browser.</p>
         </div>
         <div>
           <div class="terminal" aria-label="Terminal commands">
@@ -448,8 +448,11 @@
 <span class="prompt">$</span> git clone https://github.com/aditya00801/beyond-linearity-splines-and-gams-with-scikit-learn.git
 <span class="prompt">$</span> cd beyond-linearity-splines-and-gams-with-scikit-learn
 
-<span class="comment"># Install and run</span>
+<span class="comment"># Install and start the interactive app</span>
 <span class="prompt">$</span> python -m pip install -r requirements.txt
+<span class="prompt">$</span> streamlit run app.py
+
+<span class="comment"># Or run the full terminal walkthrough</span>
 <span class="prompt">$</span> python scaffold.py</pre>
           </div>
           <p class="demo-foot">Want to check the examples? Run <code>python -m unittest discover -s tests</code>.</p>
