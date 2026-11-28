@@ -553,8 +553,59 @@ def logistic_gam_auc(X, target, cv):
 
     return round(float(scores.mean()), 3)
 
-# Step 13 - fit_age_models (not yet solved)
-# TODO: implement
+# Step 13 - fit_age_models
+import numpy as np
+import pandas as pd
+
+def fit_age_models(X, y, cv):
+    models = {}
+
+    # Linear model
+    model = poly_model(1)
+    model.fit(X, y)
+    models['linear'] = (model, 1)
+
+    # Select polynomial degree using ANOVA
+    _, degree = choose_degree(X, y, [1, 2, 3, 4, 5, 6], cv)
+    model = poly_model(degree)
+    model.fit(X, y)
+    models['poly'] = (model, degree)
+
+    # Select number of bins using one-SE rule
+    _, bins = choose_bins(X, y, [2, 4, 8, 16], cv)
+    model = step_model(bins)
+    model.fit(X, y)
+    models['step'] = (model, bins)
+
+    # Select spline knots
+    _, knots = choose_knots(X, y, [3, 4, 5, 6, 8, 12], cv)
+    model = spline_model(knots)
+    model.fit(X, y)
+    models['spline'] = (model, knots)
+
+    # Select smoothing alpha
+    _, alpha = choose_alpha(X, y, [0.001, 0.1, 1.0, 10.0, 100.0, 1000.0], cv)
+    model = smooth_model(alpha, n_knots=20)
+    model.fit(X, y)
+    models['smooth'] = (model, alpha)
+
+    # Select local regression span
+    _, span = choose_span(X, y, [0.02, 0.05, 0.1, 0.2, 0.4, 0.7], cv)
+    model = local_model(span, len(X))
+    model.fit(X, y)
+    models['local'] = (model, span)
+
+    return models
+
+
+def curves_table(models, grid):
+    result = {}
+
+    # Predict values for each model
+    for name, (model, setting) in models.items():
+        result[name] = curve_on_grid(model, grid)
+
+    return pd.DataFrame(result, index=np.asarray(grid).ravel())
 
 # Step 14 - test_comparison (not yet solved)
 # TODO: implement
