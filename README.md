@@ -1,30 +1,45 @@
-# Beyond Linearity: Splines and GAMs with Scikit-Learn
+# Beyond Linearity: Splines and GAMs with scikit-learn
 
-The beyond-linearity material of An Introduction to Statistical Learning on the book's own Wage data. Fit wage against age with polynomials, step functions, regression splines, a penalized smoothing spline and a local smoother, see why a degree-four polynomial explodes past the data, then assemble a generalized additive model and read its partial effects.
+This project follows the beyond-linearity chapter of *An Introduction to Statistical Learning* using the book's Wage data. It compares polynomial and step-function fits, regression and smoothing splines, a local smoother, and generalized additive models (GAMs).
 
-## How to run
+## Setup
+
+Use Python 3.9 or later. Install the required packages:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+## Run the walkthrough
 
 ```bash
 python scaffold.py
 ```
 
-## Steps
+The first run downloads `Wage.csv` from the ISLP data repository and caches it in the system temporary directory. The script prints the cross-validation comparisons, extrapolation examples, partial effects, and test-set errors to the terminal.
 
-- [x] **1.** load_wage
-- [x] **2.** split_wage
-- [x] **3.** cv_tools
-- [x] **4.** polynomial_regression
-- [x] **5.** step_functions
-- [x] **6.** spline_regression
-- [x] **7.** extrapolation
-- [x] **8.** smoothing_spline
-- [x] **9.** local_smoother
-- [x] **10.** gam_pipeline
-- [x] **11.** partial_effects
-- [x] **12.** logistic_gam
-- [x] **13.** fit_age_models
-- [x] **14.** test_comparison
+## Run the tests
 
----
+```bash
+python -m unittest discover -s tests
+```
 
-Built on Deep-ML.
+The tests use small synthetic datasets and do not download the Wage data.
+
+## Project layout
+
+```text
+beyond_linearity/       Reusable implementation, grouped by topic
+  data.py               Wage data, train/test split, and age grids
+  validation.py         Cross-validation and one-standard-error rule
+  models.py             Polynomial, step, spline, and local models
+  additive.py           GAMs and partial-effect helpers
+  evaluation.py         Model comparison and test-set errors
+tests/                  Offline unit tests
+docs/                   Project overview page
+model.py                Compatibility imports for earlier examples
+scaffold.py             Command-line walkthrough
+requirements.txt        Runtime dependencies
+```
+
+The original `model.py` imports remain available for existing examples. New code can import functions from `beyond_linearity` or its topic modules.
