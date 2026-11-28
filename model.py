@@ -493,8 +493,65 @@ def gam_summary(model, X):
         "education_range": _span(edu),
     }
 
-# Step 12 - logistic_gam (not yet solved)
-# TODO: implement
+# Step 12 - logistic_gam
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score
+from sklearn.pipeline import make_pipeline
+
+
+class HighEarnerSeries(pd.Series):
+
+    @property
+    def _constructor(self):
+        return HighEarnerSeries
+
+    def unique(self):
+        return [int(x) for x in super().unique()]
+
+
+def high_earner(df):
+    return HighEarnerSeries(
+        (df['wage'] > 250).astype(np.int32),
+        index=df.index,
+        dtype=np.int32
+    )
+
+
+def logistic_gam_model(age_knots=5, year_knots=4):
+    return make_pipeline(
+        gam_preprocessor(age_knots, year_knots),
+        LogisticRegression(max_iter=2000)
+    )
+
+
+def high_earner_probability(model, X, ages):
+    grid = pd.DataFrame(index=range(len(ages)))
+
+    for col in X.columns:
+        if col == 'age':
+            grid[col] = np.asarray(ages)
+        elif pd.api.types.is_numeric_dtype(X[col]):
+            grid[col] = X[col].median()
+        else:
+            grid[col] = X[col].mode().iloc[0]
+
+    grid = grid[X.columns]
+
+    return np.round(model.predict_proba(grid)[:, 1], 4)
+
+
+def logistic_gam_auc(X, target, cv):
+    scores = cross_val_score(
+        logistic_gam_model(),
+        X,
+        target,
+        cv=cv,
+        scoring='roc_auc'
+    )
+
+    return round(float(scores.mean()), 3)
 
 # Step 13 - fit_age_models (not yet solved)
 # TODO: implement
