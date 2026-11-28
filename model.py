@@ -415,8 +415,38 @@ def roughness(curve):
     second = np.diff(np.ravel(curve), n=2)
     return round(float(np.mean(np.abs(second))), 3)
 
-# Step 10 - gam_pipeline (not yet solved)
-# TODO: implement
+# Step 10 - gam_pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import OneHotEncoder, SplineTransformer
+
+
+def gam_preprocessor(age_knots=5, year_knots=4):
+    age_spline = SplineTransformer(
+        n_knots=age_knots, degree=3, knots='quantile', include_bias=False
+    )
+    year_spline = SplineTransformer(
+        n_knots=year_knots, degree=3, knots='uniform', include_bias=False
+    )
+    return ColumnTransformer([
+        ('age', age_spline, ['age']),
+        ('year', year_spline, ['year']),
+        ('education', OneHotEncoder(drop='first'), ['education']),
+    ])
+
+
+def gam_model(age_knots=5, year_knots=4):
+    return make_pipeline(gam_preprocessor(age_knots, year_knots), LinearRegression())
+
+
+def gam_xy(df):
+    return df[['age', 'year', 'education']], df['wage']
+
+
+def gam_feature_count(model, X):
+    # model[0] is the fitted ColumnTransformer
+    return model[0].transform(X).shape[1]
 
 # Step 11 - partial_effects (not yet solved)
 # TODO: implement
