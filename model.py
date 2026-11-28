@@ -448,8 +448,50 @@ def gam_feature_count(model, X):
     # model[0] is the fitted ColumnTransformer
     return model[0].transform(X).shape[1]
 
-# Step 11 - partial_effects (not yet solved)
-# TODO: implement
+# Step 11 - partial_effects
+import numpy as np
+import pandas as pd
+
+
+def age_grid(lo=18, hi=80, n=63):
+    return pd.DataFrame({"age": np.linspace(lo, hi, n)})
+
+
+def _held_value(series):
+    if pd.api.types.is_numeric_dtype(series):
+        return series.median()
+    return series.mode().iloc[0]
+
+
+def _span(values):
+    arr = np.asarray(values, dtype=float)
+    return round(float(arr.max() - arr.min()), 1)
+
+
+def partial_effect(model, X, column, grid_values):
+    # Other columns sit at their median or mode so only `column` moves.
+    held = {col: _held_value(X[col]) for col in X.columns}
+    frame = pd.DataFrame([held] * len(grid_values))
+    frame[column] = np.asarray(grid_values)
+    preds = np.asarray(model.predict(frame), dtype=float)
+    return np.round(preds - preds.mean(), 2)
+
+
+def education_effect(model, X):
+    levels = sorted(X["education"].unique())
+    effect = partial_effect(model, X, "education", levels)
+    return dict(zip(levels, effect.tolist()))
+
+
+def gam_summary(model, X):
+    age = partial_effect(model, X, "age", age_grid()["age"])
+    year = partial_effect(model, X, "year", range(2003, 2010))
+    edu = list(education_effect(model, X).values())
+    return {
+        "age_range": _span(age),
+        "year_range": _span(year),
+        "education_range": _span(edu),
+    }
 
 # Step 12 - logistic_gam (not yet solved)
 # TODO: implement
