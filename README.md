@@ -4,7 +4,7 @@ This project follows the beyond-linearity chapter of *An Introduction to Statist
 
 ## Setup
 
-Use Python 3.9 or later. Install the required packages:
+Use Python 3.11 or later. Install the required packages:
 
 ```bash
 python -m pip install -r requirements.txt
@@ -17,6 +17,24 @@ python scaffold.py
 ```
 
 The first run downloads `Wage.csv` from the ISLP data repository and caches it in the system temporary directory. The script prints the cross-validation comparisons, extrapolation examples, partial effects, and test-set errors to the terminal.
+
+## Use the interactive app
+
+```bash
+streamlit run app.py
+```
+
+Choose a model, adjust its flexibility, view the fitted curve, inspect GAM effects, and run the held-out comparison. The app uses the same functions as the command-line walkthrough.
+
+## Deploy the app
+
+GitHub Pages hosts the project guide; it does not run the Python model. To make the interactive app available online, deploy it with [Streamlit Community Cloud](https://share.streamlit.io/):
+
+1. Sign in with GitHub and connect the public repository.
+2. Create an app from `aditya00801/beyond-linearity-splines-and-gams-with-scikit-learn`, branch `main`, entrypoint `app.py`.
+3. Deploy it and share the URL Streamlit assigns.
+
+Streamlit Community Cloud needs permission to read the GitHub repository. Its deployment steps are described in the [official guide](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/deploy).
 
 ## Run the tests
 
@@ -36,6 +54,7 @@ beyond_linearity/       Reusable implementation, grouped by topic
   additive.py           GAMs and partial-effect helpers
   evaluation.py         Model comparison and test-set errors
 tests/                  Offline unit tests
+app.py                  Interactive Streamlit app
 docs/                   Project overview page
 model.py                Compatibility imports for earlier examples
 scaffold.py             Command-line walkthrough
