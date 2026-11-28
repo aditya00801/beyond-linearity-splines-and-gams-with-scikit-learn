@@ -20,15 +20,17 @@ The first run downloads `Wage.csv` from the ISLP data repository and caches it i
 
 ## Use the interactive app
 
+**Try it online:** [Open the live Streamlit app](https://beyond-linearity-splines-and-gams-with-scikit-learn-w8eqe5c4zv.streamlit.app/).
+
 ```bash
 streamlit run app.py
 ```
 
 Choose a model, adjust its flexibility, view the fitted curve, inspect GAM effects, and run the held-out comparison. The app uses the same functions as the command-line walkthrough.
 
-## Deploy the app
+## Deploy your own copy
 
-GitHub Pages hosts the project guide; it does not run the Python model. To make the interactive app available online, deploy it with [Streamlit Community Cloud](https://share.streamlit.io/):
+The project already has a [live app](https://beyond-linearity-splines-and-gams-with-scikit-learn-w8eqe5c4zv.streamlit.app/). To deploy your own copy, use [Streamlit Community Cloud](https://share.streamlit.io/):
 
 1. Sign in with GitHub and connect the public repository.
 2. Create an app from `aditya00801/beyond-linearity-splines-and-gams-with-scikit-learn`, branch `main`, entrypoint `app.py`.
